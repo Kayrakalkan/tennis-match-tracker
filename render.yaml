@@ -2,6 +2,7 @@ services:
   - type: web
     name: tennis-match-tracker
     env: python
+    runtime: python-3.11.9
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:application
     envVars:

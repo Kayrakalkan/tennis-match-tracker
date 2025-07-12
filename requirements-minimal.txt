@@ -1,0 +1,10 @@
+# Alternative requirements without OpenCV (use if opencv-python fails)
+Flask==3.0.0
+Werkzeug==3.0.1
+Pillow==10.4.0
+pytz==2024.1
+gunicorn==21.2.0
+python-dotenv==1.0.0
+
+# Note: If you use this file, comment out face detection features in app.py
+# The app will still work but without automatic face detection for photo cropping

@@ -4,10 +4,17 @@ from datetime import datetime, timedelta
 import os
 from werkzeug.utils import secure_filename
 from PIL import Image
-import cv2
 import numpy as np
 import pytz
 from dotenv import load_dotenv
+
+# Try to import OpenCV, fall back gracefully if not available
+try:
+    import cv2
+    OPENCV_AVAILABLE = True
+except ImportError:
+    OPENCV_AVAILABLE = False
+    print("OpenCV not available - face detection features will be disabled")
 
 # Load environment variables from .env file
 load_dotenv()
@@ -177,6 +184,10 @@ def crop_and_resize_image(image_path, crop_data=None, size=(200, 200)):
 
 def detect_faces(image_path):
     """Detect faces in image for cropping suggestions"""
+    if not OPENCV_AVAILABLE:
+        print("OpenCV not available - returning empty face suggestions")
+        return []
+    
     try:
         # Load the image
         img = cv2.imread(image_path)
