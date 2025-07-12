@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Add New Match</h2>
+    
+    <form method="POST" class="match-form">
+        <div class="players-selection">
+            <div class="form-group">
+                <label for="player1_id">Player 1:</label>
+                <select id="player1_id" name="player1_id" required>
+                    <option value="">Select Player 1</option>
+                    {% for player in players %}
+                        <option value="{{ player.id }}">{{ player.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="vs-divider">VS</div>
+            
+            <div class="form-group">
+                <label for="player2_id">Player 2:</label>
+                <select id="player2_id" name="player2_id" required>
+                    <option value="">Select Player 2</option>
+                    {% for player in players %}
+                        <option value="{{ player.id }}">{{ player.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="sets-section">
+            <h3>Set Scores</h3>
+            <p class="sets-help">Enter the score for each set. You can add up to 5 sets.</p>
+            
+            <div id="sets-container">
+                <div class="set-input" id="set1">
+                    <label>Set 1:</label>
+                    <div class="set-scores">
+                        <div class="score-group">
+                            <label>Player 1:</label>
+                            <input type="number" name="set1_p1" min="0" max="20" placeholder="6">
+                        </div>
+                        <div class="score-divider">-</div>
+                        <div class="score-group">
+                            <label>Player 2:</label>
+                            <input type="number" name="set1_p2" min="0" max="20" placeholder="4">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="set-input" id="set2" style="display: none;">
+                    <label>Set 2:</label>
+                    <div class="set-scores">
+                        <div class="score-group">
+                            <label>Player 1:</label>
+                            <input type="number" name="set2_p1" min="0" max="20">
+                        </div>
+                        <div class="score-divider">-</div>
+                        <div class="score-group">
+                            <label>Player 2:</label>
+                            <input type="number" name="set2_p2" min="0" max="20">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="set-input" id="set3" style="display: none;">
+                    <label>Set 3:</label>
+                    <div class="set-scores">
+                        <div class="score-group">
+                            <label>Player 1:</label>
+                            <input type="number" name="set3_p1" min="0" max="20">
+                        </div>
+                        <div class="score-divider">-</div>
+                        <div class="score-group">
+                            <label>Player 2:</label>
+                            <input type="number" name="set3_p2" min="0" max="20">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="set-input" id="set4" style="display: none;">
+                    <label>Set 4:</label>
+                    <div class="set-scores">
+                        <div class="score-group">
+                            <label>Player 1:</label>
+                            <input type="number" name="set4_p1" min="0" max="20">
+                        </div>
+                        <div class="score-divider">-</div>
+                        <div class="score-group">
+                            <label>Player 2:</label>
+                            <input type="number" name="set4_p2" min="0" max="20">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="set-input" id="set5" style="display: none;">
+                    <label>Set 5:</label>
+                    <div class="set-scores">
+                        <div class="score-group">
+                            <label>Player 1:</label>
+                            <input type="number" name="set5_p1" min="0" max="20">
+                        </div>
+                        <div class="score-divider">-</div>
+                        <div class="score-group">
+                            <label>Player 2:</label>
+                            <input type="number" name="set5_p2" min="0" max="20">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="set-controls">
+                <button type="button" id="add-set-btn" class="btn btn-secondary">Add Another Set</button>
+                <button type="button" id="remove-set-btn" class="btn btn-secondary" style="display: none;">Remove Last Set</button>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add Match</button>
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+    
+    <div class="form-info">
+        <h3>How it works:</h3>
+        <ul>
+            <li>Select two different players for the match</li>
+            <li>Enter the score for each set played</li>
+            <li>The system will automatically determine the winner</li>
+            <li>You can add detailed ratings for both players after creating the match</li>
+            <li>Edits are allowed for 24 hours after match creation</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+let currentSets = 1;
+const maxSets = 5;
+
+document.getElementById('add-set-btn').addEventListener('click', function() {
+    if (currentSets < maxSets) {
+        currentSets++;
+        document.getElementById(`set${currentSets}`).style.display = 'block';
+        
+        if (currentSets === maxSets) {
+            this.style.display = 'none';
+        }
+        
+        document.getElementById('remove-set-btn').style.display = 'inline-block';
+    }
+});
+
+document.getElementById('remove-set-btn').addEventListener('click', function() {
+    if (currentSets > 1) {
+        const setElement = document.getElementById(`set${currentSets}`);
+        setElement.style.display = 'none';
+        
+        // Clear inputs
+        setElement.querySelectorAll('input').forEach(input => input.value = '');
+        
+        currentSets--;
+        
+        if (currentSets === 1) {
+            this.style.display = 'none';
+        }
+        
+        document.getElementById('add-set-btn').style.display = 'inline-block';
+    }
+});
+</script>
+{% endblock %}

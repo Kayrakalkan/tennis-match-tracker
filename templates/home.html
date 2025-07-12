@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-container">
+    <h2>Match History</h2>
+    
+    {% if matches %}
+        <div class="matches-grid">
+            {% for match in matches %}
+                <a href="{{ url_for('match_detail', match_id=match.id) }}" class="match-card-link">
+                    <div class="match-card">
+                        <div class="match-header">
+                            <div class="match-date">
+                                {{ match.date | format_date }}
+                            </div>
+                            {% if match.is_editable %}
+                                <div class="edit-status editable">
+                                    <span class="edit-icon">✏️</span>
+                                    <span class="time-remaining">{{ "%.1f"|format(match.hours_remaining) }}h left</span>
+                                </div>
+                            {% else %}
+                                <div class="edit-status locked">
+                                    <span class="edit-icon">🔒</span>
+                                    <span>Locked</span>
+                                </div>
+                            {% endif %}
+                            <div class="match-vs">VS</div>
+                        </div>
+                        
+                        <div class="match-players">
+                            <div class="player-section">
+                                <div class="player-photo-small">
+                                    {% if match.player1_photo %}
+                                        <img src="{{ url_for('static', filename='uploads/' + match.player1_photo) }}" 
+                                             alt="{{ match.player1_name }}">
+                                    {% else %}
+                                        <div class="no-photo-small">{{ match.player1_name[0].upper() }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="player-name">{{ match.player1_name }}</div>
+                                {% if player_overalls.get(match.player1_id) %}
+                                    <div class="player-overall">Overall: {{ player_overalls.get(match.player1_id) }}/10</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="match-score">
+                                <div class="match-result">{{ match.match_score }}</div>
+                                <div class="sets">{{ match.sets.replace(',', ' ') }}</div>
+                                <div class="winner">Winner: {{ match.winner_name }}</div>
+                            </div>
+                            
+                            <div class="player-section">
+                                <div class="player-photo-small">
+                                    {% if match.player2_photo %}
+                                        <img src="{{ url_for('static', filename='uploads/' + match.player2_photo) }}" 
+                                             alt="{{ match.player2_name }}">
+                                    {% else %}
+                                        <div class="no-photo-small">{{ match.player2_name[0].upper() }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="player-name">{{ match.player2_name }}</div>
+                                {% if player_overalls.get(match.player2_id) %}
+                                    <div class="player-overall">Overall: {{ player_overalls.get(match.player2_id) }}/10</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-matches">
+            <p>No matches recorded yet.</p>
+            <a href="{{ url_for('add_match') }}" class="btn btn-primary">Add Your First Match</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

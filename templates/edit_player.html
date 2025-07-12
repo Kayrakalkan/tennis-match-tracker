@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Edit Player</h2>
+    
+    <form method="POST" enctype="multipart/form-data" class="player-form" id="edit-player-form">
+        <input type="hidden" id="crop-data" name="crop_data" value="">
+        
+        <div class="form-section">
+            <h3>Basic Information</h3>
+            
+            <div class="form-group">
+                <label for="name">Player Name:</label>
+                <input type="text" id="name" name="name" required 
+                       value="{{ player.name }}" placeholder="Enter player name">
+            </div>
+            
+            <div class="form-group">
+                <label for="photo">Profile Photo:</label>
+                {% if player.photo_filename %}
+                    <div class="current-photo">
+                        <img src="{{ url_for('static', filename='uploads/' + player.photo_filename) }}" 
+                             alt="{{ player.name }}" class="current-photo-img">
+                        <p>Current photo</p>
+                    </div>
+                {% endif %}
+                <input type="file" id="photo" name="photo" 
+                       accept="image/png,image/jpeg,image/jpg,image/gif">
+                <small class="form-help">
+                    Upload a new profile photo to replace current one (PNG, JPG, JPEG, GIF - max 16MB)
+                </small>
+            </div>
+            
+            <!-- Image cropping area (will be shown when image is selected) -->
+            <div id="crop-container" style="display: none;">
+                <div class="crop-section">
+                    <h4>Crop Your Photo</h4>
+                    <div class="crop-controls">
+                        <button type="button" id="detect-faces-btn" class="btn btn-secondary">
+                            🎯 Detect Faces
+                        </button>
+                        <button type="button" id="reset-crop-btn" class="btn btn-secondary">
+                            🔄 Reset Crop
+                        </button>
+                    </div>
+                    <div class="crop-area">
+                        <canvas id="crop-canvas"></canvas>
+                    </div>
+                    <p class="crop-help">
+                        Drag to create a crop area. Click "Detect Faces" for automatic face detection.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Personal Details</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age">Age (optional):</label>
+                    <input type="number" id="age" name="age" min="1" max="120" 
+                           value="{{ player.age or '' }}" placeholder="e.g., 25">
+                </div>
+                
+                <div class="form-group">
+                    <label for="height">Height in cm (optional):</label>
+                    <input type="number" id="height" name="height" min="50" max="250" 
+                           value="{{ player.height or '' }}" placeholder="e.g., 175">
+                </div>
+                
+                <div class="form-group">
+                    <label for="weight">Weight in kg (optional):</label>
+                    <input type="number" id="weight" name="weight" min="20" max="200" 
+                           value="{{ player.weight or '' }}" placeholder="e.g., 70">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio">Bio/Notes (optional):</label>
+                <textarea id="bio" name="bio" rows="3" 
+                          placeholder="Tell us about this player (playing style, experience, etc.)">{{ player.bio or '' }}</textarea>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Player</button>
+            <a href="{{ url_for('players') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+    
+    <!-- Delete section at the bottom -->
+    <div class="delete-section">
+        <h3>Danger Zone</h3>
+        <p class="delete-warning">
+            ⚠️ Deleting this player will permanently remove them and all their match records. This action cannot be undone.
+        </p>
+        <form method="POST" action="{{ url_for('delete_player', player_id=player.id) }}" 
+              onsubmit="return confirm('Are you sure you want to delete {{ player.name }}? This will also delete all their match records. This action cannot be undone.')">
+            <button type="submit" class="btn btn-danger">
+                🗑️ Delete Player
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='crop.js') }}"></script>
+{% endblock %}

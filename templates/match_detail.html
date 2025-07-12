@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="detail-container">
+    <h2>Match Details</h2>
+    
+    <div class="match-info">
+        <div class="info-row">
+            <strong>Date:</strong> {{ match.date | format_datetime }}
+        </div>
+        <div class="info-row">
+            <strong>Players:</strong> {{ match.player1_name }} vs {{ match.player2_name }}
+        </div>
+        <div class="info-row">
+            <strong>Set Scores:</strong> {{ match.sets.replace(',', ' ') }}
+        </div>
+        <div class="info-row">
+            <strong>Winner:</strong> {{ match.winner_name }}
+        </div>
+        <div class="info-row">
+            <strong>Edit Status:</strong> 
+            {% if editable %}
+                <span class="edit-status-inline editable">
+                    ✏️ Editable 
+                    ({{ "%.1f"|format(match.hours_remaining) }} hours remaining)
+                </span>
+            {% else %}
+                <span class="edit-status-inline locked">🔒 Editing locked (3 hours expired)</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if editable %}
+        <form method="POST" action="{{ url_for('edit_match', match_id=match.id) }}" class="rating-form">
+            <h3>Match Evaluation</h3>
+            
+            <div class="notes-section">
+                <div class="form-group">
+                    <label for="match_note">Match Notes:</label>
+                    <textarea id="match_note" name="match_note" rows="3" 
+                              placeholder="General notes about the match (conditions, location, etc.)">{{ match.match_note or '' }}</textarea>
+                    <small class="form-help">Notes about the match itself (weather, court conditions, etc.)</small>
+                </div>
+            </div>
+            
+            <div class="players-rating">
+                <!-- Player 1 Ratings -->
+                <div class="player-rating-section">
+                    <h4 class="player-rating-header">
+                        {% if match.player1_photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + match.player1_photo) }}" 
+                                 alt="{{ match.player1_name }}" class="rating-photo">
+                        {% else %}
+                            <div class="rating-photo-placeholder">{{ match.player1_name[0].upper() }}</div>
+                        {% endif %}
+                        {{ match.player1_name }} Performance
+                    </h4>
+                    
+                    <div class="ratings-grid">
+                        {% set p1_stats = player_stats.get(match.player1_id) %}
+                        <div class="rating-group">
+                            <label for="backhand_{{ match.player1_id }}">Backhand (0-10):</label>
+                            <input type="number" id="backhand_{{ match.player1_id }}" name="backhand_{{ match.player1_id }}" 
+                                   min="0" max="10" value="{{ p1_stats.backhand if p1_stats else '' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label for="forehand_{{ match.player1_id }}">Forehand (0-10):</label>
+                            <input type="number" id="forehand_{{ match.player1_id }}" name="forehand_{{ match.player1_id }}" 
+                                   min="0" max="10" value="{{ p1_stats.forehand if p1_stats else '' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label for="service_{{ match.player1_id }}">Service (0-10):</label>
+                            <input type="number" id="service_{{ match.player1_id }}" name="service_{{ match.player1_id }}" 
+                                   min="0" max="10" value="{{ p1_stats.service if p1_stats else '' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label for="style_{{ match.player1_id }}">Playing Style (0-10):</label>
+                            <input type="number" id="style_{{ match.player1_id }}" name="style_{{ match.player1_id }}" 
+                                   min="0" max="10" value="{{ p1_stats.style if p1_stats else '' }}">
+                        </div>
+                    </div>
+                    
+                    {% if p1_stats and p1_stats.overall %}
+                        <div class="current-overall">
+                            Current Overall: {{ p1_stats.overall }}/10
+                        </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="player_note_{{ match.player1_id }}">Notes about {{ match.player1_name }}:</label>
+                        <textarea id="player_note_{{ match.player1_id }}" name="player_note_{{ match.player1_id }}" rows="2" 
+                                  placeholder="Notes about this player's performance...">{{ p1_stats.player_note if p1_stats else '' }}</textarea>
+                        <small class="form-help">Player-specific notes (strengths, weaknesses, improvements, etc.)</small>
+                    </div>
+                </div>
+                
+                <!-- Player 2 Ratings -->
+                <div class="player-rating-section">
+                    <h4 class="player-rating-header">
+                        {% if match.player2_photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + match.player2_photo) }}" 
+                                 alt="{{ match.player2_name }}" class="rating-photo">
+                        {% else %}
+                            <div class="rating-photo-placeholder">{{ match.player2_name[0].upper() }}</div>
+                        {% endif %}
+                        {{ match.player2_name }} Performance
+                    </h4>
+                    
+                    <div class="ratings-grid">
+                        {% set p2_stats = player_stats.get(match.player2_id) %}
+                        <div class="rating-group">
+                            <label for="backhand_{{ match.player2_id }}">Backhand (0-10):</label>
+                            <input type="number" id="backhand_{{ match.player2_id }}" name="backhand_{{ match.player2_id }}" 
+                                   min="0" max="10" value="{{ p2_stats.backhand if p2_stats else '' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label for="forehand_{{ match.player2_id }}">Forehand (0-10):</label>
+                            <input type="number" id="forehand_{{ match.player2_id }}" name="forehand_{{ match.player2_id }}" 
+                                   min="0" max="10" value="{{ p2_stats.forehand if p2_stats else '' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label for="service_{{ match.player2_id }}">Service (0-10):</label>
+                            <input type="number" id="service_{{ match.player2_id }}" name="service_{{ match.player2_id }}" 
+                                   min="0" max="10" value="{{ p2_stats.service if p2_stats else '' }}">
+                        </div>
+                        
+                        <div class="rating-group">
+                            <label for="style_{{ match.player2_id }}">Playing Style (0-10):</label>
+                            <input type="number" id="style_{{ match.player2_id }}" name="style_{{ match.player2_id }}" 
+                                   min="0" max="10" value="{{ p2_stats.style if p2_stats else '' }}">
+                        </div>
+                    </div>
+                    
+                    {% if p2_stats and p2_stats.overall %}
+                        <div class="current-overall">
+                            Current Overall: {{ p2_stats.overall }}/10
+                        </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="player_note_{{ match.player2_id }}">Notes about {{ match.player2_name }}:</label>
+                        <textarea id="player_note_{{ match.player2_id }}" name="player_note_{{ match.player2_id }}" rows="2" 
+                                  placeholder="Notes about this player's performance...">{{ p2_stats.player_note if p2_stats else '' }}</textarea>
+                        <small class="form-help">Player-specific notes (strengths, weaknesses, improvements, etc.)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Evaluation</button>
+            </div>
+        </form>
+    {% else %}
+        <div class="evaluation-readonly">
+            <h3>Match Evaluation</h3>
+            <div class="edit-locked">
+                <div class="lock-info">
+                    <span class="lock-icon">🔒</span>
+                    <div class="lock-details">
+                        <strong>Editing Time Expired</strong>
+                        <p>Matches can only be edited within 3 hours of creation.</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if match.match_note %}
+                <div class="readonly-group">
+                    <strong>Match Notes:</strong>
+                    <p>{{ match.match_note }}</p>
+                </div>
+            {% endif %}
+            
+            <div class="players-rating-readonly">
+                <!-- Player 1 Stats -->
+                {% set p1_stats = player_stats.get(match.player1_id) %}
+                {% if p1_stats %}
+                    <div class="player-stats-readonly">
+                        <h4>{{ match.player1_name }} Performance</h4>
+                        <div class="ratings-readonly">
+                            {% if p1_stats.backhand is not none %}
+                                <div class="rating-item">
+                                    <span>Backhand:</span> <span class="rating-value">{{ p1_stats.backhand }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p1_stats.forehand is not none %}
+                                <div class="rating-item">
+                                    <span>Forehand:</span> <span class="rating-value">{{ p1_stats.forehand }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p1_stats.service is not none %}
+                                <div class="rating-item">
+                                    <span>Service:</span> <span class="rating-value">{{ p1_stats.service }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p1_stats.style is not none %}
+                                <div class="rating-item">
+                                    <span>Playing Style:</span> <span class="rating-value">{{ p1_stats.style }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p1_stats.overall %}
+                                <div class="rating-item overall">
+                                    <span>Overall:</span> <span class="rating-value">{{ p1_stats.overall }}/10</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if p1_stats.player_note %}
+                            <div class="player-note-readonly">
+                                <strong>Notes:</strong>
+                                <p>{{ p1_stats.player_note }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <!-- Player 2 Stats -->
+                {% set p2_stats = player_stats.get(match.player2_id) %}
+                {% if p2_stats %}
+                    <div class="player-stats-readonly">
+                        <h4>{{ match.player2_name }} Performance</h4>
+                        <div class="ratings-readonly">
+                            {% if p2_stats.backhand is not none %}
+                                <div class="rating-item">
+                                    <span>Backhand:</span> <span class="rating-value">{{ p2_stats.backhand }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p2_stats.forehand is not none %}
+                                <div class="rating-item">
+                                    <span>Forehand:</span> <span class="rating-value">{{ p2_stats.forehand }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p2_stats.service is not none %}
+                                <div class="rating-item">
+                                    <span>Service:</span> <span class="rating-value">{{ p2_stats.service }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p2_stats.style is not none %}
+                                <div class="rating-item">
+                                    <span>Playing Style:</span> <span class="rating-value">{{ p2_stats.style }}/10</span>
+                                </div>
+                            {% endif %}
+                            {% if p2_stats.overall %}
+                                <div class="rating-item overall">
+                                    <span>Overall:</span> <span class="rating-value">{{ p2_stats.overall }}/10</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if p2_stats.player_note %}
+                            <div class="player-note-readonly">
+                                <strong>Notes:</strong>
+                                <p>{{ p2_stats.player_note }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="detail-actions">
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Home</a>
+        <form method="POST" action="{{ url_for('delete_match', match_id=match.id) }}" 
+              style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this match? This action cannot be undone.')">
+            <button type="submit" class="btn btn-danger">
+                🗑️ Delete Match
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
